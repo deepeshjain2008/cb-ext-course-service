@@ -29,7 +29,6 @@ import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,8 +63,7 @@ class EsUtilServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        esUtilService = new EsUtilServiceImpl(esConfig, elasticsearchClient, cbExtServerProperties);
-        ReflectionTestUtils.setField(esUtilService, "objectMapper", objectMapper);
+        esUtilService = new EsUtilServiceImpl(esConfig, elasticsearchClient, cbExtServerProperties, objectMapper);
     }
 
     @Test
@@ -587,7 +585,7 @@ class EsUtilServiceImplTest {
         );
         method.setAccessible(true);
 
-        EsUtilServiceImpl service = new EsUtilServiceImpl(null, null, null);
+        EsUtilServiceImpl service = new EsUtilServiceImpl(null, null, null, null);
         @SuppressWarnings("unchecked")
         Map<String, List<FacetDTO>> result =
                 (Map<String, List<FacetDTO>>) method.invoke(service, searchResponse, criteria);
@@ -621,7 +619,7 @@ class EsUtilServiceImplTest {
         );
         method.setAccessible(true);
 
-        EsUtilServiceImpl service = new EsUtilServiceImpl(null, null, null);
+        EsUtilServiceImpl service = new EsUtilServiceImpl(null, null, null, null);
 
         BoolQuery result = (BoolQuery) method.invoke(service, boolMap);
 
@@ -641,7 +639,7 @@ class EsUtilServiceImplTest {
         );
         method.setAccessible(true);
 
-        EsUtilServiceImpl service = new EsUtilServiceImpl(null, null, null);
+        EsUtilServiceImpl service = new EsUtilServiceImpl(null, null, null, null);
 
         // ---------- Case 1: Should return true ----------
         Map<String, Object> rangeMap = new HashMap<>();
@@ -665,7 +663,7 @@ class EsUtilServiceImplTest {
         );
         method.setAccessible(true);
 
-        EsUtilServiceImpl service = new EsUtilServiceImpl(null, null, null);
+        EsUtilServiceImpl service = new EsUtilServiceImpl(null, null, null, null);
 
         // ---------- Case 1: Range query ----------
         Map<String, Object> rangeMap = new HashMap<>();

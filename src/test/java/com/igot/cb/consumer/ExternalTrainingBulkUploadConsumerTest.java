@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.igot.cb.cassandra.CassandraOperation;
 import com.igot.cb.model.ApiRespParam;
 import com.igot.cb.model.ApiResponse;
+import com.igot.cb.service.ContentInfoServiceImpl;
 import com.igot.cb.service.NotificationService;
 import com.igot.cb.service.OutboundRequestHandlerServiceImpl;
 import com.igot.cb.service.impl.ExternalTrainingCertificateServiceImpl;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.KafkaTemplate;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -47,16 +49,18 @@ class ExternalTrainingBulkUploadConsumerTest {
     @Mock
     private ExternalTrainingCertificateServiceImpl certService;
 
+    @Mock
+    private KafkaTemplate kafkaTemplate;
+
+    @Mock
+    private ContentInfoServiceImpl contentInfoService;
+
     @BeforeEach
     void setup() throws Exception {
 
-        consumer = Mockito.spy(new ExternalTrainingBulkUploadConsumer(notificationService));
+        consumer = Mockito.spy(new ExternalTrainingBulkUploadConsumer(notificationService, props, cassandraOperation,
+                storageService, outboundService, kafkaTemplate, certService, contentInfoService));
 
-        inject("cassandraOperation", cassandraOperation);
-        inject("storageService", storageService);
-        inject("outboundRequestHandlerService", outboundService);
-        inject("serverProperties", props);
-        inject("externalTrainingCertificateService", certService);
         inject("objectMapper", new ObjectMapper());
     }
 

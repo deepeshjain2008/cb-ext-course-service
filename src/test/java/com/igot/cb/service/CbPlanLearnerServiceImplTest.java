@@ -4,8 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.igot.cb.cache.CbPlanCacheMgr;
 import com.igot.cb.cache.RedisCacheMgr;
 import com.igot.cb.cassandra.CassandraOperation;
+import com.igot.cb.elasticsearch.service.EsUtilService;
 import com.igot.cb.model.ApiResponse;
+import com.igot.cb.user.UserUtilityService;
 import com.igot.cb.util.AccessTokenValidator;
+import com.igot.cb.util.CbExtServerProperties;
 import com.igot.cb.util.Constants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -43,14 +46,22 @@ class CbPlanLearnerServiceImplTest {
     @Mock(lenient = true)
     private RedisCacheMgr redisCacheMgr;
 
+    @Mock(lenient = true)
+    private CbExtServerProperties serverProperties;
+
+    @Mock(lenient = true)
+    private UserUtilityService userUtilityService;
+
+    @Mock(lenient = true)
+    private EsUtilService esUtilService;
+
 
     private CbPlanLearnerServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new CbPlanLearnerServiceImpl(accessTokenValidator, cassandraOperation, cbPlanCacheMgr);
-        ReflectionTestUtils.setField(service, "contentService", contentService);
-        ReflectionTestUtils.setField(service, "redisCacheMgr", redisCacheMgr);
+        service = new CbPlanLearnerServiceImpl(accessTokenValidator, cassandraOperation, cbPlanCacheMgr,
+                serverProperties, userUtilityService, contentService, esUtilService, redisCacheMgr);
     }
 
 

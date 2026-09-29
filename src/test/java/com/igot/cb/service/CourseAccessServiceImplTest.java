@@ -65,16 +65,12 @@ class CourseAccessServiceImplTest {
     @BeforeEach
     void setUp() throws Exception {
         courseAccessService = new CourseAccessServiceImpl(
-            mockAccessTokenValidator, 
+            mockAccessTokenValidator,
             mockUserProfileService,
-            mockAccessSettingRuleCacheMgr, contentInfoService, outboundRequestHandlerService, cbPlanLearnerServiceImpl, cassandraOperation
+            mockAccessSettingRuleCacheMgr, contentInfoService, outboundRequestHandlerService, cbPlanLearnerServiceImpl, cassandraOperation,
+            redisCacheMgr
         );
-        
-        // Inject the mocked RedisCacheMgr using reflection
-        Field redisCacheMgrField = CourseAccessServiceImpl.class.getDeclaredField("redisCacheMgr");
-        redisCacheMgrField.setAccessible(true);
-        redisCacheMgrField.set(courseAccessService, redisCacheMgr);
-        
+
         // Inject contentReadFields using reflection
         Field contentReadFieldsField = CourseAccessServiceImpl.class.getDeclaredField("contentReadFields");
         contentReadFieldsField.setAccessible(true);

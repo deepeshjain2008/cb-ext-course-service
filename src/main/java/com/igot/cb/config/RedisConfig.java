@@ -1,6 +1,5 @@
 package com.igot.cb.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,16 +22,16 @@ import redis.clients.jedis.JedisPoolConfig;
 public class RedisConfig {
 
     private final PropertiesCache propertiesCache;
-    
-    @Autowired
-    private ServerProperties serverProperties;
+
+    private final ServerProperties serverProperties;
 
     /**
      * Constructor for RedisConfig.
      * Initializes the PropertiesCache instance.
      */
-    public RedisConfig() {
+    public RedisConfig(ServerProperties serverProperties) {
         this.propertiesCache = PropertiesCache.getInstance();
+        this.serverProperties = serverProperties;
     }
 
     /**

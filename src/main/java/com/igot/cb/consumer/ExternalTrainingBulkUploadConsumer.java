@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -44,32 +43,34 @@ public class ExternalTrainingBulkUploadConsumer {
 
     ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired
-    CbExtServerProperties serverProperties;
+    private final CbExtServerProperties serverProperties;
 
-    @Autowired
-    CassandraOperation cassandraOperation;
+    private final CassandraOperation cassandraOperation;
 
-    @Autowired
-    StorageService storageService;
+    private final StorageService storageService;
 
-    @Autowired
-    OutboundRequestHandlerServiceImpl outboundRequestHandlerService;
+    private final OutboundRequestHandlerServiceImpl outboundRequestHandlerService;
 
-    @Autowired
-    private KafkaTemplate kafkaTemplate;
+    private final KafkaTemplate kafkaTemplate;
 
-    @Autowired
-    private ExternalTrainingCertificateServiceImpl externalTrainingCertificateService;
+    private final ExternalTrainingCertificateServiceImpl externalTrainingCertificateService;
 
-    @Autowired
-    private ContentInfoServiceImpl contentInfoService;
+    private final ContentInfoServiceImpl contentInfoService;
 
     private final NotificationService notificationService;
 
-    @Autowired
-    public ExternalTrainingBulkUploadConsumer(NotificationService notificationService) {
+    public ExternalTrainingBulkUploadConsumer(NotificationService notificationService, CbExtServerProperties serverProperties,
+            CassandraOperation cassandraOperation, StorageService storageService, OutboundRequestHandlerServiceImpl outboundRequestHandlerService,
+            KafkaTemplate kafkaTemplate, ExternalTrainingCertificateServiceImpl externalTrainingCertificateService,
+            ContentInfoServiceImpl contentInfoService) {
         this.notificationService = notificationService;
+        this.serverProperties = serverProperties;
+        this.cassandraOperation = cassandraOperation;
+        this.storageService = storageService;
+        this.outboundRequestHandlerService = outboundRequestHandlerService;
+        this.kafkaTemplate = kafkaTemplate;
+        this.externalTrainingCertificateService = externalTrainingCertificateService;
+        this.contentInfoService = contentInfoService;
     }
 
     @KafkaListener(topics = "${external.training.user.bulk.upload.topic}", groupId = "${external.training.user.bulk.upload.topic.group}")
