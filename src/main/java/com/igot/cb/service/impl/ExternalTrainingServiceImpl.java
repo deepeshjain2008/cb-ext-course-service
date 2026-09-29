@@ -17,7 +17,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -43,29 +42,34 @@ public class ExternalTrainingServiceImpl implements ExternalTrainingService {
 
     private final Logger logger = LoggerFactory.getLogger(ExternalTrainingServiceImpl.class);
 
-    @Autowired
-    StorageService storageService;
+    private final StorageService storageService;
 
-    @Autowired
-    CbExtServerProperties serverConfig;
+    private final CbExtServerProperties serverConfig;
 
-    @Autowired
-    private KafkaTemplate kafkaTemplate;
+    private final KafkaTemplate kafkaTemplate;
 
-    @Autowired
-    CassandraOperation cassandraOperation;
+    private final CassandraOperation cassandraOperation;
 
-    @Autowired
-    AccessTokenValidator accessTokenValidator;
+    private final AccessTokenValidator accessTokenValidator;
 
-    @Autowired
-    private ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
-    @Autowired
-    private UserAndOrgServiceImpl userAndOrgService;
+    private final UserAndOrgServiceImpl userAndOrgService;
 
-    @Autowired
-    private UserUtilityService userUtilityService;
+    private final UserUtilityService userUtilityService;
+
+    public ExternalTrainingServiceImpl(StorageService storageService, CbExtServerProperties serverConfig,
+            KafkaTemplate kafkaTemplate, CassandraOperation cassandraOperation, AccessTokenValidator accessTokenValidator,
+            ObjectMapper mapper, UserAndOrgServiceImpl userAndOrgService, UserUtilityService userUtilityService) {
+        this.storageService = storageService;
+        this.serverConfig = serverConfig;
+        this.kafkaTemplate = kafkaTemplate;
+        this.cassandraOperation = cassandraOperation;
+        this.accessTokenValidator = accessTokenValidator;
+        this.mapper = mapper;
+        this.userAndOrgService = userAndOrgService;
+        this.userUtilityService = userUtilityService;
+    }
 
     @Override
     public ApiResponse externalTrainingUserBulkUpload(MultipartFile mFile, String eventId, String batchId, String authToken) {

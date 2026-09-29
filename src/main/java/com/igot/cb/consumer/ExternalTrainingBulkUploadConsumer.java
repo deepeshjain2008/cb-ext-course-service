@@ -233,7 +233,7 @@ public class ExternalTrainingBulkUploadConsumer {
      * Cleans up the headers by removing any surrounding quotes.
      */
     private void cleanHeaders(List<String> headers) {
-        headers.replaceAll(header -> header.replaceAll("^\"|\"$", ""));
+        headers.replaceAll(header -> header.replaceAll("(^\")|(\"$)", ""));
     }
 
     /**
@@ -362,11 +362,9 @@ public class ExternalTrainingBulkUploadConsumer {
         for (int i = 0; i < values.size(); i += batchSize) {
             int end = Math.min(i + batchSize, values.size());
             List<String> subList = values.subList(i, end);
-            reqMap.put(Constants.FILTERS, new HashMap<String, Object>() {
-                {
-                    put(key, subList);
-                }
-            });
+            Map<String, Object> filterMap = new HashMap<>();
+            filterMap.put(key, subList);
+            reqMap.put(Constants.FILTERS, filterMap);
             requestBody.put(Constants.REQUEST, reqMap);
 
             try {

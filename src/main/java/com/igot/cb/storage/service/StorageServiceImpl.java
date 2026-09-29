@@ -7,7 +7,6 @@ import com.igot.cb.util.ProjectUtil;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,8 +27,11 @@ public class StorageServiceImpl implements StorageService {
     private final Logger logger = LoggerFactory.getLogger(getClass().getName());
     private BaseStorageService storageService = null;
 
-    @Autowired
-    private CbExtServerProperties serverProperties;
+    private final CbExtServerProperties serverProperties;
+
+    public StorageServiceImpl(CbExtServerProperties serverProperties) {
+        this.serverProperties = serverProperties;
+    }
 
     @PostConstruct
     public void init() {
@@ -50,7 +52,9 @@ public class StorageServiceImpl implements StorageService {
         File file = null;
         try {
             file = new File(System.currentTimeMillis() + "_" + mFile.getOriginalFilename());
-            file.createNewFile();
+            if (!file.createNewFile()) {
+                logger.warn("File already exists or could not be created: {}", file.getName());
+            }
             // Use try-with-resources to ensure FileOutputStream is closed
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 fos.write(mFile.getBytes());
@@ -63,8 +67,8 @@ public class StorageServiceImpl implements StorageService {
             response.setResponseCode(HttpStatus.INTERNAL_SERVER_ERROR);
             return response;
         } finally {
-            if (file != null && file.exists()) {
-                file.delete();
+            if (file != null && file.exists() && !file.delete()) {
+                logger.warn("Failed to delete temporary file: {}", file.getName());
             }
         }
     }
@@ -88,8 +92,8 @@ public class StorageServiceImpl implements StorageService {
             response.setResponseCode(HttpStatus.INTERNAL_SERVER_ERROR);
             return response;
         } finally {
-            if (file != null) {
-                file.delete();
+            if (file != null && !file.delete()) {
+                logger.warn("Failed to delete temporary file: {}", file.getName());
             }
         }
     }

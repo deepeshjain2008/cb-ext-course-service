@@ -89,9 +89,9 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
             List<String> contactPointsString = hosts.stream()
                     .map(host -> host.trim() + ":9042") // Ensure proper host:port format
                     .collect(Collectors.toList());
-            DriverConfigLoader loader = DriverConfigLoader.programmaticBuilder()
+            ConsistencyLevel consistencyLevel = getConsistencyLevel();
+            var configLoaderBuilder = DriverConfigLoader.programmaticBuilder()
                     .withStringList(DefaultDriverOption.CONTACT_POINTS, contactPointsString)
-                    .withString(DefaultDriverOption.REQUEST_CONSISTENCY, getConsistencyLevel().name())
                     .withString(DefaultDriverOption.LOAD_BALANCING_LOCAL_DATACENTER, "datacenter1")
                     .withInt(DefaultDriverOption.CONNECTION_POOL_LOCAL_SIZE,
                             Integer.parseInt(cache.getProperty(Constants.CORE_CONNECTIONS_PER_HOST_FOR_LOCAL)))
@@ -103,8 +103,11 @@ public class CassandraConnectionManagerImpl implements CassandraConnectionManage
                     .withInt(DefaultDriverOption.REQUEST_TIMEOUT, 10000)
                     .withString(DefaultDriverOption.PROTOCOL_VERSION, ProtocolVersion.V4.toString())
                     .withClass(DefaultDriverOption.RETRY_POLICY_CLASS, com.datastax.oss.driver.internal.core.retry.DefaultRetryPolicy.class)
-                    .withClass(DefaultDriverOption.TIMESTAMP_GENERATOR_CLASS, AtomicTimestampGenerator.class)
-                    .build();
+                    .withClass(DefaultDriverOption.TIMESTAMP_GENERATOR_CLASS, AtomicTimestampGenerator.class);
+            if (consistencyLevel != null) {
+                configLoaderBuilder.withString(DefaultDriverOption.REQUEST_CONSISTENCY, consistencyLevel.name());
+            }
+            DriverConfigLoader loader = configLoaderBuilder.build();
             CqlSession sessionWithKeyspaces;
             if (StringUtils.isNotBlank(keySpaceName)) {
                 sessionWithKeyspaces = CqlSession.builder()
