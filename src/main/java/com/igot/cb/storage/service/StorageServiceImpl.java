@@ -113,7 +113,7 @@ public class StorageServiceImpl implements StorageService {
         ApiResponse response = ProjectUtil.createDefaultResponse(Constants.API_FILE_DOWNLOAD);
         try {
             String objectKey = containerName + "/" + fileName;
-            storageService.download(serverProperties.getCloudContainerName(), objectKey, Constants.LOCAL_BASE_PATH,
+            storageService.download(serverProperties.getCloudContainerName(), objectKey, serverProperties.getLocalBasePath(),
                     Option.apply(Boolean.FALSE));
             return response;
         } catch (Exception e) {
