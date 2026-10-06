@@ -629,4 +629,7 @@ public class Constants {
 
     private Constants() {
     }
+    public static final String PUBLIC_KEY_HEADER = "(-+BEGIN PUBLIC KEY-+)";
+    public static final String PUBLIC_KEY_FOOTER = "(-+END PUBLIC KEY-+)";
+    public static final String NEW_LINE_REGEX = "[\\r\\n]+";
 }

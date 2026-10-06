@@ -70,9 +70,9 @@ public class KeyManager {
         // Remove header and footer from the key string
         String publicKey = new String(key.getBytes(), StandardCharsets.UTF_8);
         // Remove header and footer from the key string
-        publicKey = publicKey.replaceAll("(-+BEGIN PUBLIC KEY-+)", "");
-        publicKey = publicKey.replaceAll("(-+END PUBLIC KEY-+)", "");
-        publicKey = publicKey.replaceAll("[\\r\\n]+", "");
+        publicKey = publicKey.replace(Constants.PUBLIC_KEY_HEADER, "");
+        publicKey = publicKey.replace(Constants.PUBLIC_KEY_FOOTER, "");
+        publicKey = publicKey.replaceAll(Constants.NEW_LINE_REGEX, "");
         // Decode the key string from Base64
         byte[] keyBytes = Base64Util.decode(publicKey.getBytes("UTF-8"), Base64Util.DEFAULT);
         // Convert the key bytes to a PublicKey object
