@@ -6,7 +6,6 @@ import com.igot.cb.model.ApiResponse;
 import com.igot.cb.service.ExternalTrainingService;
 import com.igot.cb.service.UserAndOrgServiceImpl;
 import com.igot.cb.storage.service.StorageService;
-import com.igot.cb.user.UserUtilityService;
 import com.igot.cb.util.AccessTokenValidator;
 import com.igot.cb.util.CbExtServerProperties;
 import com.igot.cb.util.Constants;
@@ -56,11 +55,10 @@ public class ExternalTrainingServiceImpl implements ExternalTrainingService {
 
     private final UserAndOrgServiceImpl userAndOrgService;
 
-    private final UserUtilityService userUtilityService;
 
     public ExternalTrainingServiceImpl(StorageService storageService, CbExtServerProperties serverConfig,
             KafkaTemplate kafkaTemplate, CassandraOperation cassandraOperation, AccessTokenValidator accessTokenValidator,
-            ObjectMapper mapper, UserAndOrgServiceImpl userAndOrgService, UserUtilityService userUtilityService) {
+            ObjectMapper mapper, UserAndOrgServiceImpl userAndOrgService) {
         this.storageService = storageService;
         this.serverConfig = serverConfig;
         this.kafkaTemplate = kafkaTemplate;
@@ -68,7 +66,6 @@ public class ExternalTrainingServiceImpl implements ExternalTrainingService {
         this.accessTokenValidator = accessTokenValidator;
         this.mapper = mapper;
         this.userAndOrgService = userAndOrgService;
-        this.userUtilityService = userUtilityService;
     }
 
     @Override

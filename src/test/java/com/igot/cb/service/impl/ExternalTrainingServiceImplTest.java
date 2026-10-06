@@ -61,7 +61,7 @@ class ExternalTrainingServiceImplTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         externalTrainingService = new ExternalTrainingServiceImpl(storageService, serverConfig, kafkaTemplate,
-                cassandraOperation, accessTokenValidator, mapper, userAndOrgService, userUtilityService);
+                cassandraOperation, accessTokenValidator, mapper, userAndOrgService);
     }
 
     @Test
