@@ -233,7 +233,8 @@ public class ExternalTrainingServiceImpl implements ExternalTrainingService {
             }
             // 5. Row count validation
             int dataRowCount = 0;
-            while (reader.readLine() != null) {
+            String line;
+            while ((line = reader.readLine()) != null) {
                 dataRowCount++;
                 if (dataRowCount > externalTrainingBatchSize) {
                     return "CSV file should not contain more than " + externalTrainingBatchSize + " rows.";
