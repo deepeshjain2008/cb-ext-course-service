@@ -165,6 +165,28 @@ class ExternalTrainingBulkUploadConsumerTest {
     }
 
     // ===========================
+    // PROCESS EXTERNAL TRAINING BULK UPLOAD (local base path)
+    // ===========================
+
+    @Test
+    void testProcessExternalTrainingBulkUpload_fileNotPresent_usesConfiguredLocalBasePath() throws Exception {
+        when(props.getLocalBasePath()).thenReturn(System.getProperty("java.io.tmpdir") + "/");
+
+        Map<String, String> inputData = new HashMap<>();
+        inputData.put(Constants.ORD_ID, "org1");
+        inputData.put(Constants.CONTEXT_ID_KEY, "event1");
+        inputData.put(Constants.CONTEXT_ID_CAMEL, "event1");
+        inputData.put(Constants.BATCH_ID, "batch1");
+        inputData.put(Constants.IDENTIFIER, "id1");
+        inputData.put(Constants.FILE_NAME, "no-such-file-" + UUID.randomUUID() + ".csv");
+
+        invokePrivate("processExternalTrainingBulkUpload", new Class[]{Map.class}, inputData);
+
+        verify(props).getLocalBasePath();
+        verify(cassandraOperation).updateRecord(eq(Constants.KEYSPACE_SUNBIRD), any(), any(), any());
+    }
+
+    // ===========================
     // PROCESS RECORD
     // ===========================
 

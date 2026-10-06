@@ -136,4 +136,7 @@ public class CbExtServerProperties {
     @Value("${external.training.batch.size}")
     private int externalTrainingBatchSize;
 
+    @Value("${local.base.path:/tmp/}")
+    private String localBasePath;
+
 }

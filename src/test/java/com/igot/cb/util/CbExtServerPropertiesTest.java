@@ -94,4 +94,13 @@ class CbExtServerPropertiesTest {
     assertEquals("http://wrapper-host", properties.getCbWrapperNotificationHost());
     assertEquals("/wrapper-path", properties.getCbWrapperNotificationPath());
 }
+
+    @Test
+    void testGetSetLocalBasePath() {
+        CbExtServerProperties properties = new CbExtServerProperties();
+
+        properties.setLocalBasePath("/custom/base/path/");
+
+        assertEquals("/custom/base/path/", properties.getLocalBasePath());
+    }
 }

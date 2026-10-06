@@ -1,28 +1,67 @@
 package com.igot.cb.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.igot.cb.cassandra.CassandraOperation;
+import com.igot.cb.model.ApiResponse;
+import com.igot.cb.service.UserAndOrgServiceImpl;
+import com.igot.cb.storage.service.StorageService;
+import com.igot.cb.user.UserUtilityService;
+import com.igot.cb.util.AccessTokenValidator;
 import com.igot.cb.util.CbExtServerProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.util.ReflectionTestUtils;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.UUID;
 
 class ExternalTrainingServiceImplTest {
 
     @Mock
     private CbExtServerProperties serverConfig;
 
+    @Mock
+    private StorageService storageService;
+
+    @Mock
+    private KafkaTemplate kafkaTemplate;
+
+    @Mock
+    private CassandraOperation cassandraOperation;
+
+    @Mock
+    private AccessTokenValidator accessTokenValidator;
+
+    @Mock
+    private ObjectMapper mapper;
+
+    @Mock
+    private UserAndOrgServiceImpl userAndOrgService;
+
+    @Mock
+    private UserUtilityService userUtilityService;
+
     private ExternalTrainingServiceImpl externalTrainingService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        externalTrainingService = new ExternalTrainingServiceImpl();
-        ReflectionTestUtils.setField(externalTrainingService, "serverConfig", serverConfig);
+        externalTrainingService = new ExternalTrainingServiceImpl(storageService, serverConfig, kafkaTemplate,
+                cassandraOperation, accessTokenValidator, mapper, userAndOrgService);
     }
 
     @Test
@@ -76,5 +115,63 @@ class ExternalTrainingServiceImplTest {
         MockMultipartFile file = new MockMultipartFile("file", "data.csv", "text/csv",
                 "Email\na@test.com\nb@test.com\n".getBytes());
         assertEquals("CSV file should not contain more than 1 rows.", externalTrainingService.validateCsvFile(file));
+    }
+
+    @Test
+    void testDownloadFile_readsFromConfiguredLocalBasePath() throws IOException {
+        String tempDir = System.getProperty("java.io.tmpdir") + "/";
+        String fileName = "download-" + UUID.randomUUID() + ".csv";
+        Path tempFile = Path.of(tempDir, fileName);
+        Files.write(tempFile, "Email\na@test.com\n".getBytes(StandardCharsets.UTF_8));
+        try {
+            when(accessTokenValidator.fetchUserIdFromAccessToken(anyString(), any(ApiResponse.class)))
+                    .thenReturn("user123");
+            when(serverConfig.getLocalBasePath()).thenReturn(tempDir);
+
+            ResponseEntity<?> response = externalTrainingService.downloadFile(fileName, "token123");
+
+            assertEquals(HttpStatus.OK, response.getStatusCode());
+        } finally {
+            Files.deleteIfExists(tempFile);
+        }
+    }
+
+    @Test
+    void testDownloadFile_fileNotPresent_returnsInternalServerError() {
+        when(accessTokenValidator.fetchUserIdFromAccessToken(anyString(), any(ApiResponse.class)))
+                .thenReturn("user123");
+        when(serverConfig.getLocalBasePath()).thenReturn(System.getProperty("java.io.tmpdir") + "/");
+
+        ResponseEntity<?> response = externalTrainingService.downloadFile(
+                "no-such-file-" + UUID.randomUUID() + ".csv", "token123");
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+
+    @Test
+    void testDownloadBulkUploadSampleFile_readsFromConfiguredLocalBasePath_andDeletesAfter() throws IOException {
+        String tempDir = System.getProperty("java.io.tmpdir") + "/";
+        String fileName = "sample-" + UUID.randomUUID() + ".csv";
+        Path tempFile = Path.of(tempDir, fileName);
+        Files.write(tempFile, "Email\n".getBytes(StandardCharsets.UTF_8));
+
+        when(serverConfig.getExternalTrainingUserBulkUploadSampleFileName()).thenReturn(fileName);
+        when(serverConfig.getLocalBasePath()).thenReturn(tempDir);
+
+        ResponseEntity<?> response = externalTrainingService.downloadBulkUploadSampleFile();
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertFalse(Files.exists(tempFile), "Sample file should be deleted after being served");
+    }
+
+    @Test
+    void testDownloadBulkUploadSampleFile_fileNotPresent_returnsInternalServerError() {
+        String fileName = "missing-sample-" + UUID.randomUUID() + ".csv";
+        when(serverConfig.getExternalTrainingUserBulkUploadSampleFileName()).thenReturn(fileName);
+        when(serverConfig.getLocalBasePath()).thenReturn(System.getProperty("java.io.tmpdir") + "/");
+
+        ResponseEntity<?> response = externalTrainingService.downloadBulkUploadSampleFile();
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
 }

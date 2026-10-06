@@ -10,10 +10,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.sunbird.cloud.storage.BaseStorageService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class StorageServiceImplTest {
@@ -38,10 +43,28 @@ class StorageServiceImplTest {
     void testDownloadFile_exceptionIsHandled() {
         // storageService (the underlying BaseStorageService) is not initialized (init() not called),
         // so calling download triggers a NullPointerException that must be handled gracefully.
+        when(serverProperties.getLocalBasePath()).thenReturn("/tmp/");
+
         ApiResponse response = storageService.downloadFile("missing.csv", "container1");
 
         assertNotNull(response);
         assertNotNull(response.getParams());
+    }
+
+    @Test
+    void testDownloadFile_success_usesConfiguredLocalBasePath() {
+        // Underlying BaseStorageService mocked so the download() call completes normally,
+        // fully exercising the serverProperties.getLocalBasePath() call on the success path.
+        BaseStorageService mockBaseStorageService = mock(BaseStorageService.class);
+        ReflectionTestUtils.setField(storageService, "storageService", mockBaseStorageService);
+
+        when(serverProperties.getCloudContainerName()).thenReturn("container1");
+        when(serverProperties.getLocalBasePath()).thenReturn("/tmp/");
+
+        ApiResponse response = storageService.downloadFile("sample.csv", "container1");
+
+        assertNotNull(response);
+        verify(serverProperties).getLocalBasePath();
     }
 
     @Test

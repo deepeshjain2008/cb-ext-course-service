@@ -133,7 +133,7 @@ public class ExternalTrainingBulkUploadConsumer {
         Map<String, Object> eventDetails = new HashMap<>();
         String columnName = "Email";
 
-        File file = new File(Constants.LOCAL_BASE_PATH + inputData.get(Constants.FILE_NAME));
+        File file = new File(serverProperties.getLocalBasePath() + inputData.get(Constants.FILE_NAME));
         if (!file.exists() || file.length() == 0) {
             logger.info("File not downloaded/present.");
             status = Constants.FAILED_UPPERCASE;
