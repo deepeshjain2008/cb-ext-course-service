@@ -1,6 +1,5 @@
 package com.igot.cb.service;
 
-import com.datastax.oss.driver.internal.core.util.CollectionsUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.igot.cb.util.AccessTokenValidator;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -29,23 +27,28 @@ import java.util.*;
 @Service
 @Slf4j
 public class NotificationServiceImpl implements NotificationService {
-    @Autowired
-    private AccessTokenValidator accessTokenValidator;
+    private final AccessTokenValidator accessTokenValidator;
 
-    @Autowired
-    private CassandraOperation cassandraOperation;
+    private final CassandraOperation cassandraOperation;
 
-    @Autowired
-    private UserUtilityService userUtilityService; // kept as fallback
+    private final UserUtilityService userUtilityService; // kept as fallback
 
-    @Autowired
-    private OutboundRequestHandlerServiceImpl outboundRequestHandlerService;
+    private final OutboundRequestHandlerServiceImpl outboundRequestHandlerService;
 
-    @Autowired
-    private CbExtServerProperties props;
+    private final CbExtServerProperties props;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
+
+    public NotificationServiceImpl(AccessTokenValidator accessTokenValidator, CassandraOperation cassandraOperation,
+                                    UserUtilityService userUtilityService, OutboundRequestHandlerServiceImpl outboundRequestHandlerService,
+                                    CbExtServerProperties props, ObjectMapper objectMapper) {
+        this.accessTokenValidator = accessTokenValidator;
+        this.cassandraOperation = cassandraOperation;
+        this.userUtilityService = userUtilityService;
+        this.outboundRequestHandlerService = outboundRequestHandlerService;
+        this.props = props;
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public ApiResponse notifyAssignmentUploaded(Map<String, Object> requestData, String authToken) {
@@ -204,7 +207,7 @@ public class NotificationServiceImpl implements NotificationService {
                 }
             }
             StringWriter writer = new StringWriter();
-            velocityEngine.evaluate(context, writer, Constants.HTMLTemplate, htmlTemplate);
+            velocityEngine.evaluate(context, writer, Constants.HTML_TEMPLATE, htmlTemplate);
             replacedHTML = writer.toString();
         } catch (Exception e) {
             log.error("Unable to create template ", e);

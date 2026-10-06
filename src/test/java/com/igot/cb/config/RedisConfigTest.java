@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.igot.cb.common.ServerProperties;
 import com.igot.cb.util.Constants;
 import com.igot.cb.util.PropertiesCache;
 
@@ -19,11 +20,13 @@ class RedisConfigTest {
 
     private RedisConfig redisConfig;
     private PropertiesCache mockPropertiesCache;
+    private ServerProperties mockServerProperties;
 
     @BeforeEach
     void setUp() throws Exception {
         mockPropertiesCache = mock(PropertiesCache.class);
-        redisConfig = new RedisConfig();
+        mockServerProperties = mock(ServerProperties.class);
+        redisConfig = new RedisConfig(mockServerProperties);
 
         // Inject mock PropertiesCache using reflection
         Field propertiesCacheField = RedisConfig.class.getDeclaredField("propertiesCache");
@@ -33,7 +36,7 @@ class RedisConfigTest {
 
     @Test
     void testConstructor() {
-        RedisConfig config = new RedisConfig();
+        RedisConfig config = new RedisConfig(mockServerProperties);
         assertNotNull(config);
     }
 

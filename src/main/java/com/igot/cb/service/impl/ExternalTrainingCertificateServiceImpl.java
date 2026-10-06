@@ -6,7 +6,6 @@ import com.igot.cb.util.CbExtServerProperties;
 import com.igot.cb.util.Constants;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -15,14 +14,19 @@ import java.util.*;
 @Component
 public class ExternalTrainingCertificateServiceImpl {
 
-    @Autowired
-    CbExtServerProperties serverProperties;
+    private final CbExtServerProperties serverProperties;
 
-    @Autowired
-    KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
-    @Autowired
-    private ObjectMapper mapper;
+    private final ObjectMapper mapper;
+
+    public ExternalTrainingCertificateServiceImpl(CbExtServerProperties serverProperties,
+                                                   KafkaTemplate<String, String> kafkaTemplate,
+                                                   ObjectMapper mapper) {
+        this.serverProperties = serverProperties;
+        this.kafkaTemplate = kafkaTemplate;
+        this.mapper = mapper;
+    }
 
     public void generateCertificateEventAndPushToKafka(Map<String, Object> userDetailsMap, Map<String, Object> eventDetailsMap) throws JsonProcessingException {
         String eventJson = generateCertificateEvent(userDetailsMap, eventDetailsMap);

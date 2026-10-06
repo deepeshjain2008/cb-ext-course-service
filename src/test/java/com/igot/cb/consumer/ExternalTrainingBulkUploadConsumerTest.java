@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.igot.cb.cassandra.CassandraOperation;
 import com.igot.cb.model.ApiRespParam;
 import com.igot.cb.model.ApiResponse;
+import com.igot.cb.service.ContentInfoServiceImpl;
 import com.igot.cb.service.NotificationService;
 import com.igot.cb.service.OutboundRequestHandlerServiceImpl;
 import com.igot.cb.service.impl.ExternalTrainingCertificateServiceImpl;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.KafkaTemplate;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -47,16 +49,18 @@ class ExternalTrainingBulkUploadConsumerTest {
     @Mock
     private ExternalTrainingCertificateServiceImpl certService;
 
+    @Mock
+    private KafkaTemplate kafkaTemplate;
+
+    @Mock
+    private ContentInfoServiceImpl contentInfoService;
+
     @BeforeEach
     void setup() throws Exception {
 
-        consumer = Mockito.spy(new ExternalTrainingBulkUploadConsumer(notificationService));
+        consumer = Mockito.spy(new ExternalTrainingBulkUploadConsumer(notificationService, props, cassandraOperation,
+                storageService, outboundService, kafkaTemplate, certService, contentInfoService));
 
-        inject("cassandraOperation", cassandraOperation);
-        inject("storageService", storageService);
-        inject("outboundRequestHandlerService", outboundService);
-        inject("serverProperties", props);
-        inject("externalTrainingCertificateService", certService);
         inject("objectMapper", new ObjectMapper());
     }
 
@@ -158,6 +162,28 @@ class ExternalTrainingBulkUploadConsumerTest {
         );
 
         assertEquals(Constants.FAILED, result);
+    }
+
+    // ===========================
+    // PROCESS EXTERNAL TRAINING BULK UPLOAD (local base path)
+    // ===========================
+
+    @Test
+    void testProcessExternalTrainingBulkUpload_fileNotPresent_usesConfiguredLocalBasePath() throws Exception {
+        when(props.getLocalBasePath()).thenReturn(System.getProperty("java.io.tmpdir") + "/");
+
+        Map<String, String> inputData = new HashMap<>();
+        inputData.put(Constants.ORD_ID, "org1");
+        inputData.put(Constants.CONTEXT_ID_KEY, "event1");
+        inputData.put(Constants.CONTEXT_ID_CAMEL, "event1");
+        inputData.put(Constants.BATCH_ID, "batch1");
+        inputData.put(Constants.IDENTIFIER, "id1");
+        inputData.put(Constants.FILE_NAME, "no-such-file-" + UUID.randomUUID() + ".csv");
+
+        invokePrivate("processExternalTrainingBulkUpload", new Class[]{Map.class}, inputData);
+
+        verify(props).getLocalBasePath();
+        verify(cassandraOperation).updateRecord(eq(Constants.KEYSPACE_SUNBIRD), any(), any(), any());
     }
 
     // ===========================

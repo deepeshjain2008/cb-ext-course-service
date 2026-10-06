@@ -14,7 +14,6 @@ import com.igot.cb.cassandra.CassandraOperation;
 import com.igot.cb.cassandra.exceptions.CustomException;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.kafka.common.protocol.types.Field;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -46,8 +45,7 @@ public class CourseAccessServiceImpl {
     private final CbPlanLearnerServiceImpl cbPlanLearnerService;
     private final CassandraOperation cassandraOperation;
 
-    @Autowired
-    private RedisCacheMgr redisCacheMgr;
+    private final RedisCacheMgr redisCacheMgr;
 
 
     @Value("${content.read.fields}")
@@ -114,7 +112,7 @@ public class CourseAccessServiceImpl {
      * @param accessSettingRuleCacheMgr Cache manager for access setting rules.
      */
     public CourseAccessServiceImpl(AccessTokenValidator accessTokenValidator,
-                                   UserAndOrgServiceImpl userProfileServiceImpl, AccessSettingRuleCacheMgr accessSettingRuleCacheMgr, ContentInfoServiceImpl contentService, OutboundRequestHandlerServiceImpl outboundRequestHandlerService1, CbPlanLearnerServiceImpl cbPlanLearnerService, CassandraOperation cassandraOperation) {
+                                   UserAndOrgServiceImpl userProfileServiceImpl, AccessSettingRuleCacheMgr accessSettingRuleCacheMgr, ContentInfoServiceImpl contentService, OutboundRequestHandlerServiceImpl outboundRequestHandlerService1, CbPlanLearnerServiceImpl cbPlanLearnerService, CassandraOperation cassandraOperation, RedisCacheMgr redisCacheMgr) {
         this.accessTokenValidator = accessTokenValidator;
         this.userProfileServiceImpl = userProfileServiceImpl;
         this.accessSettingRuleCacheMgr = accessSettingRuleCacheMgr;
@@ -123,6 +121,7 @@ public class CourseAccessServiceImpl {
         this.objectMapper = new ObjectMapper();
         this.cbPlanLearnerService = cbPlanLearnerService;
         this.cassandraOperation = cassandraOperation;
+        this.redisCacheMgr = redisCacheMgr;
     }
 
     /**

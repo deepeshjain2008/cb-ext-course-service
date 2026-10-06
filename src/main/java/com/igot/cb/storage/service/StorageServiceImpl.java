@@ -7,7 +7,6 @@ import com.igot.cb.util.ProjectUtil;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,8 +27,11 @@ public class StorageServiceImpl implements StorageService {
     private final Logger logger = LoggerFactory.getLogger(getClass().getName());
     private BaseStorageService storageService = null;
 
-    @Autowired
-    private CbExtServerProperties serverProperties;
+    private final CbExtServerProperties serverProperties;
+
+    public StorageServiceImpl(CbExtServerProperties serverProperties) {
+        this.serverProperties = serverProperties;
+    }
 
     @PostConstruct
     public void init() {
@@ -109,7 +111,7 @@ public class StorageServiceImpl implements StorageService {
         ApiResponse response = ProjectUtil.createDefaultResponse(Constants.API_FILE_DOWNLOAD);
         try {
             String objectKey = containerName + "/" + fileName;
-            storageService.download(serverProperties.getCloudContainerName(), objectKey, Constants.LOCAL_BASE_PATH,
+            storageService.download(serverProperties.getCloudContainerName(), objectKey, serverProperties.getLocalBasePath(),
                     Option.apply(Boolean.FALSE));
             return response;
         } catch (Exception e) {

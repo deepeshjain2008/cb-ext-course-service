@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -45,14 +44,14 @@ public class EsUtilServiceImpl implements EsUtilService{
 
     private static final Map<String, Map<String, Object>> schemaCache = new ConcurrentHashMap<>();
 
-    public EsUtilServiceImpl(EsConfig esConfig, ElasticsearchClient elasticsearchClient, CbExtServerProperties cbExtServerProperties) {
+    private final ObjectMapper objectMapper;
+
+    public EsUtilServiceImpl(EsConfig esConfig, ElasticsearchClient elasticsearchClient, CbExtServerProperties cbExtServerProperties, ObjectMapper objectMapper) {
         this.cbExtServerProperties = cbExtServerProperties;
         this.esConfig = esConfig;
         this.elasticsearchClient = elasticsearchClient;
+        this.objectMapper = objectMapper;
     }
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Override
     public String addDocument(

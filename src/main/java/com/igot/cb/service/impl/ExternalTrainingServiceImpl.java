@@ -17,7 +17,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -43,29 +42,35 @@ public class ExternalTrainingServiceImpl implements ExternalTrainingService {
 
     private final Logger logger = LoggerFactory.getLogger(ExternalTrainingServiceImpl.class);
 
-    @Autowired
-    StorageService storageService;
+    private final StorageService storageService;
 
-    @Autowired
-    CbExtServerProperties serverConfig;
+    private final CbExtServerProperties serverConfig;
 
-    @Autowired
-    private KafkaTemplate kafkaTemplate;
+    private final KafkaTemplate kafkaTemplate;
 
-    @Autowired
-    CassandraOperation cassandraOperation;
+    private final CassandraOperation cassandraOperation;
 
-    @Autowired
-    AccessTokenValidator accessTokenValidator;
+    private final AccessTokenValidator accessTokenValidator;
 
-    @Autowired
-    private ObjectMapper mapper;
+    private final ObjectMapper mapper;
 
-    @Autowired
-    private UserAndOrgServiceImpl userAndOrgService;
+    private final UserAndOrgServiceImpl userAndOrgService;
 
-    @Autowired
-    private UserUtilityService userUtilityService;
+    private final UserUtilityService userUtilityService;
+
+    public ExternalTrainingServiceImpl(StorageService storageService, CbExtServerProperties serverConfig,
+                                        KafkaTemplate kafkaTemplate, CassandraOperation cassandraOperation,
+                                        AccessTokenValidator accessTokenValidator, ObjectMapper mapper,
+                                        UserAndOrgServiceImpl userAndOrgService, UserUtilityService userUtilityService) {
+        this.storageService = storageService;
+        this.serverConfig = serverConfig;
+        this.kafkaTemplate = kafkaTemplate;
+        this.cassandraOperation = cassandraOperation;
+        this.accessTokenValidator = accessTokenValidator;
+        this.mapper = mapper;
+        this.userAndOrgService = userAndOrgService;
+        this.userUtilityService = userUtilityService;
+    }
 
     @Override
     public ApiResponse externalTrainingUserBulkUpload(MultipartFile mFile, String eventId, String batchId, String authToken) {
@@ -289,7 +294,7 @@ public class ExternalTrainingServiceImpl implements ExternalTrainingService {
             }
 
             storageService.downloadFile(fileName, serverConfig.getExternalTrainingBulkUploadContainerName());
-            Path tmpPath = Paths.get(Constants.LOCAL_BASE_PATH + fileName);
+            Path tmpPath = Paths.get(serverConfig.getLocalBasePath() + fileName);
             ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(tmpPath));
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"");
@@ -333,7 +338,7 @@ public class ExternalTrainingServiceImpl implements ExternalTrainingService {
     @Override
     public ResponseEntity<Resource> downloadBulkUploadSampleFile() {
         String fileName = serverConfig.getExternalTrainingUserBulkUploadSampleFileName();
-        Path filePath = Paths.get(Constants.LOCAL_BASE_PATH, fileName);
+        Path filePath = Paths.get(serverConfig.getLocalBasePath(), fileName);
         try {
             storageService.downloadFile(fileName, serverConfig.getExternalTrainingBulkUploadContainerName());
             byte[] fileBytes = Files.readAllBytes(filePath);

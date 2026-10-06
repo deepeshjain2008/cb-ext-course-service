@@ -471,7 +471,7 @@ public class Constants {
     public static final String BP_ASSIGNMENT_UPLOAD = "BP_ASSIGNMENT_UPLOAD";
     public static final String BP_ASSIGNMENT_EVALUATE = "BP_ASSIGNMENT_EVALUATE";
     public static final String BP_ASSIGNMENT_SUBMIT = "BP_ASSIGNMENT_SUBMIT";
-    public static final String HTMLTemplate = "HTMLTemplate";
+    public static final String HTML_TEMPLATE = "HTMLTemplate";
 
     public static final String ACCESS_SETTINGS_ENABLED ="accessSettingsEnabled";
     public static final String PROFILE_DETAILS_LOWERCASE = "profiledetails";
@@ -568,7 +568,6 @@ public class Constants {
     public static final String SUCCESSFUL_UPPERCASE = "SUCCESSFUL";
     public static final String FAILED_UPPERCASE = "FAILED";
     public static final String STATUS_IN_PROGRESS_UPPERCASE = "IN-PROGRESS";
-    public static final String LOCAL_BASE_PATH= "/tmp/";
     public static final String ENROLLED_DATE_KEY_LOWER = "enrolled_date";
     public static final String DATE_TIME = "dateTime";
     public static final String EVENT_BATCH_TABLE_NAME = "event_batch";

@@ -3,7 +3,6 @@ package com.igot.cb.controller;
 import com.igot.cb.model.ApiResponse;
 import com.igot.cb.service.ExternalTrainingService;
 import com.igot.cb.util.Constants;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,8 +14,11 @@ import java.io.IOException;
 public class ExternalTrainingController {
 
 
-    @Autowired
-    ExternalTrainingService externalTrainingService;
+    private final ExternalTrainingService externalTrainingService;
+
+    public ExternalTrainingController(ExternalTrainingService externalTrainingService) {
+        this.externalTrainingService = externalTrainingService;
+    }
 
     @PostMapping("/bulkupload/{eventId}/{batchId}")
     public ResponseEntity<?> externalTrainingUserBulkUpload(@RequestParam("file") MultipartFile multipartFile, @PathVariable(value = "eventId") String eventId, @PathVariable("batchId") String batchId, @RequestHeader(Constants.X_AUTH_TOKEN) String authToken) throws IOException {

@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -40,36 +39,45 @@ import java.util.concurrent.CompletableFuture;
 @Service
 public class ExternalTrainingBulkUploadConsumer {
 
+    private static final String STATUS = "Status";
+    private static final String ERROR_DETAILS = "Error Details";
+
     private final Logger logger = LoggerFactory.getLogger(ExternalTrainingBulkUploadConsumer.class);
 
     ObjectMapper objectMapper = new ObjectMapper();
 
-    @Autowired
-    CbExtServerProperties serverProperties;
+    private final CbExtServerProperties serverProperties;
 
-    @Autowired
-    CassandraOperation cassandraOperation;
+    private final CassandraOperation cassandraOperation;
 
-    @Autowired
-    StorageService storageService;
+    private final StorageService storageService;
 
-    @Autowired
-    OutboundRequestHandlerServiceImpl outboundRequestHandlerService;
+    private final OutboundRequestHandlerServiceImpl outboundRequestHandlerService;
 
-    @Autowired
-    private KafkaTemplate kafkaTemplate;
+    private final KafkaTemplate kafkaTemplate;
 
-    @Autowired
-    private ExternalTrainingCertificateServiceImpl externalTrainingCertificateService;
+    private final ExternalTrainingCertificateServiceImpl externalTrainingCertificateService;
 
-    @Autowired
-    private ContentInfoServiceImpl contentInfoService;
+    private final ContentInfoServiceImpl contentInfoService;
 
     private final NotificationService notificationService;
 
-    @Autowired
-    public ExternalTrainingBulkUploadConsumer(NotificationService notificationService) {
+    public ExternalTrainingBulkUploadConsumer(NotificationService notificationService,
+                                               CbExtServerProperties serverProperties,
+                                               CassandraOperation cassandraOperation,
+                                               StorageService storageService,
+                                               OutboundRequestHandlerServiceImpl outboundRequestHandlerService,
+                                               KafkaTemplate kafkaTemplate,
+                                               ExternalTrainingCertificateServiceImpl externalTrainingCertificateService,
+                                               ContentInfoServiceImpl contentInfoService) {
         this.notificationService = notificationService;
+        this.serverProperties = serverProperties;
+        this.cassandraOperation = cassandraOperation;
+        this.storageService = storageService;
+        this.outboundRequestHandlerService = outboundRequestHandlerService;
+        this.kafkaTemplate = kafkaTemplate;
+        this.externalTrainingCertificateService = externalTrainingCertificateService;
+        this.contentInfoService = contentInfoService;
     }
 
     @KafkaListener(topics = "${external.training.user.bulk.upload.topic}", groupId = "${external.training.user.bulk.upload.topic.group}")
@@ -132,7 +140,7 @@ public class ExternalTrainingBulkUploadConsumer {
         Map<String, Object> eventDetails = new HashMap<>();
         String columnName = "Email";
 
-        File file = new File(Constants.LOCAL_BASE_PATH + inputData.get(Constants.FILE_NAME));
+        File file = new File(serverProperties.getLocalBasePath() + inputData.get(Constants.FILE_NAME));
         if (!file.exists() || file.length() == 0) {
             logger.info("File not downloaded/present.");
             status = Constants.FAILED_UPPERCASE;
@@ -149,8 +157,8 @@ public class ExternalTrainingBulkUploadConsumer {
             headers = new ArrayList<>(csvParser.getHeaderNames());
             cleanHeaders(headers);
 
-            if (!headers.contains("Status")) headers.add("Status");
-            if (!headers.contains("Error Details")) headers.add("Error Details");
+            if (!headers.contains(STATUS)) headers.add(STATUS);
+            if (!headers.contains(ERROR_DETAILS)) headers.add(ERROR_DETAILS);
 
             int expectedFieldCount = headers.size() - 2; // Exclude "Status" and "Error Details"
 
@@ -167,7 +175,7 @@ public class ExternalTrainingBulkUploadConsumer {
 
                     Map<String, String> updatedRecord = processRecord(record, expectedFieldCount, eventId, batchId, emailUserIdMap, eventDetails, notificationUserIds);
                     updatedRecords.add(updatedRecord);
-                    if ("FAILED".equalsIgnoreCase(updatedRecord.get("Status"))) {
+                    if ("FAILED".equalsIgnoreCase(updatedRecord.get(STATUS))) {
                         failedCount++;
                     } else {
                         processedCount++;
@@ -309,8 +317,8 @@ public class ExternalTrainingBulkUploadConsumer {
      * Marks a record as failed with an error message.
      */
     private void markRecordAsFailed(Map<String, String> record, String errorMessage) {
-        record.put("Status", "FAILED");
-        record.put("Error Details", errorMessage);
+        record.put(STATUS, "FAILED");
+        record.put(ERROR_DETAILS, errorMessage);
     }
 
     /**
